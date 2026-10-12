@@ -1,565 +1,209 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DripTokStore</title>
-    <link rel="stylesheet" href="styles.css">
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- FontAwesome para íconos de redes sociales -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta name="description" content="Network Constellation - See who you know: a 3D map of your LinkedIn connections clustered by what people do. Runs in your browser; nothing uploaded. Private, open-source, no dependencies.">
+    <meta name="keywords" content="3d,claude,data-visualization,force-graph,linkedin,local-first,network-visualization,no-dependencies,open-source,privacy,threejs">
+    <meta name="author" content="kichutinho">
+    <meta property="og:title" content="🌌 network-constellation - Your LinkedIn Universe, Visualized">
+    <meta property="og:description" content="See who you know: a 3D map of your LinkedIn connections clustered by what people do. Runs in your browser; nothing uploaded.">
+    <meta property="og:url" content="https://github.com/kichutinho/network-constellation">
+    <meta property="og:type" content="website">
+    <title>🌌 network-constellation - Your LinkedIn Universe, Visualized</title>
+    <style>
+        body {
+            background: #f4f6f8;
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #1a2a3a;
+            line-height: 1.7;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+        h1 {
+            font-size: 2.4rem;
+            font-weight: 700;
+            color: #0d1b2a;
+            margin-bottom: 10px;
+            letter-spacing: -0.5px;
+        }
+        h2 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: #0d1b2a;
+            margin-top: 40px;
+            margin-bottom: 15px;
+            border-bottom: 3px solid #00a6a6;
+            display: inline-block;
+            padding-bottom: 5px;
+        }
+        p {
+            font-size: 1.05rem;
+            margin-bottom: 16px;
+        }
+        a {
+            color: #00a6a6;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .badge-container {
+            margin: 15px 0 30px;
+        }
+        .download-btn {
+            display: inline-block;
+            background-color: #f39c12;
+            color: #1a2a3a;
+            font-size: 1.2rem;
+            font-weight: 700;
+            padding: 14px 28px;
+            border: none;
+            border-radius: 30px;
+            box-shadow: 0 4px 12px rgba(243, 156, 18, 0.3);
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(243, 156, 18, 0.4);
+            text-decoration: none;
+        }
+        .card {
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            padding: 25px 30px;
+            margin: 25px 0;
+        }
+        ul {
+            padding-left: 20px;
+            margin-bottom: 15px;
+        }
+        li {
+            margin-bottom: 8px;
+        }
+        .highlight {
+            background: #fff9e6;
+            border-left: 4px solid #f39c12;
+            padding: 12px 15px;
+            border-radius: 0 8px 8px 0;
+            font-style: italic;
+        }
+        code {
+            background: #eef1f4;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            font-family: 'Consolas', 'Courier New', monospace;
+        }
+        .footer {
+            text-align: center;
+            color: #5a6b7a;
+            font-size: 0.9rem;
+            margin-top: 50px;
+            padding-bottom: 30px;
+        }
+    </style>
 </head>
 <body>
-
-    
-    <!-- NOTIFICACIONES TOAST -->
-    <div id="toast-container" class="toast-container"></div>
-
-    <!-- HEADER / NAVEGACIÓN -->
-    <header class="main-header">
-        <div class="header-container">
-            <a href="#home" class="logo" id="logo-btn">
-                DripTok<span>Store</span>
-            </a>
-            
-            <nav class="nav-menu" id="nav-menu">
-                <a href="#home" class="nav-link active" data-section="home">Inicio</a>
-                <a href="#catalog" class="nav-link" data-section="catalog">Catálogo</a>
-                <a href="#favorites" class="nav-link" data-section="favorites" id="nav-favs">Favoritos</a>
-                <a href="#profile" class="nav-link" data-section="profile" id="nav-profile-link">Cuenta</a>
-                <a href="#admin" class="nav-link admin-only-nav hidden" data-section="admin" id="nav-admin">Admin</a>
-            </nav>
-
-            <div class="header-actions">
-                <button class="icon-btn" id="search-trigger" aria-label="Buscar">
-                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                </button>
-                <button class="icon-btn position-relative" id="cart-trigger" data-section="cart">
-                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
-                    <span class="cart-badge hidden" id="cart-badge">0</span>
-                </button>
-                <button class="mobile-menu-toggle" id="menu-toggle" aria-label="Menú">
-                    <span></span>
-                    <span></span>
-                </button>
-            </div>
-        </div>
-    </header>
-
-    <!-- BUSCADOR SUPERIOR DESPLEGABLE -->
-    <div id="search-overlay" class="search-overlay">
-        <div class="search-container">
-            <input type="text" id="global-search-input" placeholder="¿Qué estás buscando hoy?...">
-            <button id="close-search" class="close-btn">
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-            </button>
-        </div>
-    </div>
-
-    <!-- CONTENIDO PRINCIPAL (SPA) -->
-    <main class="main-content">
-
-<!-- MODAL DE MÉTODOS DE PAGO -->
-    <div id="payment-modal" class="payment-modal-overlay">
-        <div class="payment-modal-content">
-            <h3>MÉTODOS DE PAGO</h3>
-            <p class="modal-main-text">Al realizar el pedido manda foto del boucher, tus datos y te la enviamos por la empresa shaloom 🛫 este es mi número de celular plin y yape  992316295</p>
-            
-            <p class="modal-name"><strong>FABRIZIO DIEGO VILLACAMPA CHAPOÑAY</strong></p>
-            
-            <div class="bank-info">
-                <p><strong>BCP</strong><br>C.A. 19438629356049<br>CCI 00219413862935604998</p>
-                <p><strong>BBVA</strong><br>C.A. 0011-0814-0287699927<br>CCI. 011-814-000287699927-13</p>
-                <p><strong>INTERBANK</strong><br>C.A.  4883293538055<br>CCI.  00348801329353805541</p>
-            </div>
-            
-            <p class="modal-small-text">continua con le pedido a watsap y manda la confirmacion de pago!</p>
-            
-            <div class="modal-actions">
-                <button class="btn btn-outline" id="close-payment-modal">Cancelar</button>
-                <button class="btn btn-black" id="confirm-whatsapp-btn">Ir a WhatsApp</button>
-            </div>
-        </div>
-    </div>
-
-
-
-
-
+    <div class="container">
+        <h1>🌌 network-constellation - Your LinkedIn Universe, Visualized</h1>
         
-        
-        <!-- SECCIÓN: INICIO (HOME) -->
-        <section id="section-home" class="app-section active">
-            <div class="hero-carousel">
-                <div class="hero-slide">
-                    <div class="hero-overlay"></div>
-                    <div class="hero-content">
-                        <span class="hero-tag">Nueva Coleccion 2026</span>
-                        <h1 class="hero-title">Estilo <p>Drip</p></h1>
-                        <p class="hero-subtitle">Descubre nuestros nuevos conjuntos clasicos</p>
-                        <div class="hero-actions">
-                            <button class="btn btn-primary" onclick="window.location.hash = '#catalog'">Ver Catálogo</button>
-                            <button class="btn btn-outline" onclick="app.filterNewArrivals()">Novedades</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- CATEGORÍAS RÁPIDAS -->
-            <div class="section-container">
-                <h2 class="section-title text-center">COMPRAR POR CATEGORÍA</h2>
-                <div class="categories-grid" id="home-categories">
-                    <!-- Dinámico -->
-                </div>
-            </div>
-
-            <!-- NOVEDADES Y DESTACADOS -->
-            <div class="section-container">
-                <div class="section-header-flex">
-                    <h2 class="section-title">LO NUEVO EN TIENDA</h2>
-                    <button class="link-btn" onclick="window.location.hash = '#catalog'">Ver todo</button>
-                </div>
-                <div class="products-grid" id="featured-products">
-                    <!-- Inyección dinámica -->
-                </div>
-            </div>
-
-            <!-- BANNER PROMOCIONAL SECUNDARIO -->
-            <div class="promo-banner-split">
-                <div class="promo-image"></div>
-                <div class="promo-text-content">
-                    <span class="promo-tag">Edicion Limitada</span>
-                    <h2>Elegancia Celeste.</h2>
-                    <p>Descubre nuestras nuevas colecciones en conjuntos, camisas, shord, buzos de mas alta calidad</p>
-                    <button class="btn btn-black" onclick="window.location.hash = '#catalog'">Descubrir Colección</button>
-                </div>
-            </div>
-        </section>
-
-        <!-- SECCIÓN: CATÁLOGO -->
-        <section id="section-catalog" class="app-section">
-            <div class="catalog-layout">
-                <!-- Filtros Laterales -->
-                <aside class="catalog-sidebar" id="catalog-sidebar">
-                    <div class="sidebar-header">
-                        <h3>FILTROS</h3>
-                        <button class="close-sidebar-btn" id="close-filters-btn">Cerrar</button>
-                    </div>
-                    
-                    <div class="filter-group">
-                        <h4 class="filter-title">Categorías</h4>
-                        <div class="filter-options-list" id="filter-categories-container">
-                            <!-- Inyectado dinámicamente -->
-                        </div>
-                    </div>
-
-                    <div class="filter-group">
-                        <h4 class="filter-title">Precio Máximo</h4>
-                        <div class="price-range-wrapper">
-                            <input type="range" id="price-range" min="0" max="500" value="500" step="5">
-                            <div class="price-labels">
-                                <span>S/ 0</span>
-                                <span id="price-range-val">S/ 500</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="filter-group">
-                        <h4 class="filter-title">Ordenar por</h4>
-                        <select id="sort-select" class="form-control">
-                            <option value="newest">Más nuevos</option>
-                            <option value="price-asc">Menor precio</option>
-                            <option value="price-desc">Mayor precio</option>
-                            <option value="popular">Más vendidos</option>
-                        </select>
-                    </div>
-
-                    <button class="btn btn-black btn-full" id="clear-filters">Limpiar Filtros</button>
-                </aside>
-
-                <!-- Área de Productos -->
-                <div class="catalog-main">
-                    <div class="catalog-top-bar">
-                        <p class="products-count" id="products-count-label">Cargando productos...</p>
-                        <button class="btn btn-outline mobile-filter-trigger" id="mobile-filter-btn">
-                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
-                            Filtrar
-                        </button>
-                    </div>
-
-                    <div class="products-grid" id="catalog-products-grid">
-                        <!-- Inyección dinámica de productos -->
-                    </div>
-
-                    <div class="empty-state hidden" id="catalog-empty-state">
-                        <svg viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor" stroke-width="1"><circle cx="12" cy="12" r="10"></circle><line x1="8" y1="12" x2="16" y2="12"></line></svg>
-                        <h3>No encontramos productos</h3>
-                        <p>Prueba ajustando los filtros o realizando otra búsqueda.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- SECCIÓN: FAVORITOS -->
-        <section id="section-favorites" class="app-section">
-            <div class="section-container">
-                <h1 class="page-title">MIS FAVORITOS</h1>
-                <div class="products-grid" id="favorites-grid">
-                    <!-- Dinámico -->
-                </div>
-                <div class="empty-state hidden" id="favs-empty-state">
-                    <svg viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor" stroke-width="1"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
-                    <h3>Tu lista de favoritos está vacía</h3>
-                    <p>Explora la tienda y guarda las prendas que más te gusten.</p>
-                    <button class="btn btn-black" onclick="window.location.hash = '#catalog'">Explorar catálogo</button>
-                </div>
-            </div>
-        </section>
-
-        <!-- SECCIÓN: CARRITO -->
-        <section id="section-cart" class="app-section">
-            <div class="cart-layout-container">
-                <div class="cart-items-section">
-                    <h1 class="page-title">TU CARRITO</h1>
-                    <div id="cart-items-list">
-                        <!-- Contenido dinámico -->
-                    </div>
-                    <div class="empty-state hidden" id="cart-empty-state">
-                        <svg viewBox="0 0 24 24" width="64" height="64" fill="none" stroke="currentColor" stroke-width="1"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
-                        <h3>Tu carrito está vacío</h3>
-                        <p>No has añadido prendas a tu carrito de compras.</p>
-                        <button class="btn btn-black" onclick="window.location.hash = '#catalog'">Ver Catálogo</button>
-                    </div>
-                </div>
-
-                <div class="cart-summary-section" id="cart-summary-panel">
-                    <h3>RESUMEN DE COMPRA</h3>
-                    <div class="summary-row">
-                        <span>Subtotal</span>
-                        <span id="cart-subtotal">S/ 0.00</span>
-                    </div>
-                    <div class="summary-row">
-                        <span>Envío</span>
-                        <span class="free-shipping">Gratis</span>
-                    </div>
-                    <hr>
-                    <div class="summary-row summary-total">
-                        <span>Total estimado</span>
-                        <span id="cart-total">S/ 0.00</span>
-                    </div>
-                    <p class="checkout-hint">La compra se procesará y coordinará directamente a través de WhatsApp de forma rápida y segura.</p>
-                    <button class="btn btn-black btn-full" id="checkout-btn">HACER PEDIDO POR WHATSAPP</button>
-                    <button class="btn btn-outline btn-full" id="clear-cart-btn" style="margin-top: 10px;">Vaciar Carrito</button>
-                </div>
-            </div>
-        </section>
-
-        <!-- SECCIÓN: PERFIL / AUTENTICACIÓN -->
-        <section id="section-profile" class="app-section">
-            <!-- Caso: No Autenticado -->
-            <div class="auth-wrapper hidden" id="auth-container">
-                <div class="auth-card" id="login-card">
-                    <h2>INICIAR SESIÓN</h2>
-                    <p class="auth-subtitle">Accede a tus pedidos, favoritos y personaliza tu perfil premium.</p>
-                    <form id="login-form" class="auth-form">
-                        <div class="form-group">
-                            <label for="login-email">Correo Electrónico</label>
-                            <input type="email" id="login-email" class="form-control" placeholder="ejemplo@correo.com" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="login-password">Contraseña</label>
-                            <input type="password" id="login-password" class="form-control" placeholder="••••••••" required>
-                        </div>
-                        <button type="submit" class="btn btn-black btn-full">INGRESAR</button>
-                    </form>
-                    <p class="auth-switch">¿No tienes cuenta? <a href="#" id="go-to-register">Regístrate ahora</a></p>
-                </div>
-
-                <div class="auth-card hidden" id="register-card">
-                    <h2>CREAR CUENTA</h2>
-                    <p class="auth-subtitle">Sé parte de GloriosaCervecera y disfruta de beneficios exclusivos de preventa.</p>
-                    <form id="register-form" class="auth-form">
-                        <div class="form-group">
-                            <label for="register-name">Nombre Completo</label>
-                            <input type="text" id="register-name" class="form-control" placeholder="Tu nombre" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="register-email">Correo Electrónico</label>
-                            <input type="email" id="register-email" class="form-control" placeholder="ejemplo@correo.com" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="register-password">Contraseña (Mínimo 6 caracteres)</label>
-                            <input type="password" id="register-password" class="form-control" placeholder="••••••••" minlength="6" required>
-                        </div>
-                        <button type="submit" class="btn btn-black btn-full">REGISTRARSE</button>
-                    </form>
-                    <p class="auth-switch">¿Ya tienes una cuenta? <a href="#" id="go-to-login">Inicia sesión</a></p>
-                </div>
-            </div>
-
-            <!-- Caso: Autenticado -->
-            <div class="profile-dashboard hidden" id="profile-dashboard">
-                <div class="profile-header-grid">
-                    <div class="profile-avatar-wrapper">
-                        <img src="" alt="Avatar de usuario" id="user-profile-img" class="user-avatar">
-                    </div>
-                    <div class="profile-meta">
-                        <h2 id="user-display-name">Cargando...</h2>
-                        <p id="user-display-email">correo@usuario.com</p>
-                        <span class="user-role-badge" id="user-role-badge">Cliente Premium</span>
-                        <p class="member-since" id="user-register-date">Miembro desde: --/--/----</p>
-                    </div>
-                </div>
-
-                <div class="profile-tabs">
-                    <button class="profile-tab active" data-tab="orders">Mis Pedidos</button>
-                    <button class="profile-tab" data-tab="edit-profile">Editar Cuenta</button>
-                </div>
-
-                <!-- Tab: Pedidos -->
-                <div class="profile-tab-content active" id="tab-orders">
-                    <h3>HISTORIAL DE PEDIDOS</h3>
-                    <div id="orders-list-container">
-                        <!-- Pedidos en Firestore -->
-                    </div>
-                </div>
-
-                <!-- Tab: Editar Perfil -->
-                <div class="profile-tab-content" id="tab-edit-profile">
-                    <h3>INFORMACIÓN DE LA CUENTA</h3>
-                    <form id="edit-profile-form" class="modern-form">
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label for="edit-name">Nombre Completo</label>
-                                <input type="text" id="edit-name" class="form-control" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="edit-photo-url">URL de Foto de Perfil</label>
-                                <input type="url" id="edit-photo-url" class="form-control" placeholder="https://ejemplo.com/tu-foto.jpg">
-                            </div>
-                        </div>
-                        <button type="submit" class="btn btn-black">Guardar Cambios</button>
-                    </form>
-
-                    <h3 style="margin-top: 40px;">CAMBIAR CONTRASEÑA</h3>
-                    <form id="change-password-form" class="modern-form">
-                        <div class="form-group max-w-md">
-                            <label for="new-password">Nueva Contraseña (Mínimo 6 caracteres)</label>
-                            <input type="password" id="new-password" class="form-control" minlength="6" required>
-                        </div>
-                        <button type="submit" class="btn btn-black">Actualizar Contraseña</button>
-                    </form>
-
-                    <div class="profile-action-footer">
-                        <button class="btn btn-outline" id="logout-btn">CERRAR SESIÓN</button>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- SECCIÓN: PANEL ADMINISTRADOR -->
-        <section id="section-admin" class="app-section">
-            <div class="admin-dashboard-container">
-                <!-- Sidebar del Dashboard -->
-                <aside class="admin-sidebar">
-                    <div class="admin-profile">
-                        <h4>ADMINISTRADOR</h4>
-                        <p>DripTokShop Control Panel</p>
-                    </div>
-                    <nav class="admin-nav-tabs">
-                        <button class="admin-tab-btn active" data-admin-tab="dashboard">Dashboard</button>
-                        <button class="admin-tab-btn" data-admin-tab="add-product">Agregar Producto</button>
-                        <button class="admin-tab-btn" data-admin-tab="warehouse">Almacén (CRUD)</button>
-                        <button class="admin-tab-btn" data-admin-tab="orders">Pedidos Recibidos</button>
-                    </nav>
-                </aside>
-
-                <!-- Área de Trabajo Admin -->
-                <div class="admin-main-content">
-                    
-                    <!-- Tab: Dashboard Principal -->
-                    <div class="admin-tab-pane active" id="admin-tab-dashboard">
-                        <h2>DASHBOARD OPERATIVO</h2>
-                        <div class="stats-grid">
-                            <div class="stat-card">
-                                <h3>Total Usuarios</h3>
-                                <p class="stat-number" id="stat-total-users">0</p>
-                            </div>
-                            <div class="stat-card">
-                                <h3>Total Productos</h3>
-                                <p class="stat-number" id="stat-total-products">0</p>
-                            </div>
-                            <div class="stat-card">
-                                <h3>Pedidos Realizados</h3>
-                                <p class="stat-number" id="stat-total-orders">0</p>
-                            </div>
-                        </div>
-
-                        <div class="dashboard-visuals">
-                            <div class="chart-container">
-                                <h3>Estadísticas de Tráfico y Pedidos</h3>
-                                <canvas id="admin-stats-chart" width="400" height="150"></canvas>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Tab: Agregar Producto -->
-                    <div class="admin-tab-pane" id="admin-tab-add-product">
-                        <h2 id="form-product-title">NUEVO PRODUCTO</h2>
-                        <form id="product-form" class="modern-form">
-                            <input type="hidden" id="form-product-id">
-                            <div class="form-grid">
-                                <div class="form-group">
-                                    <label for="product-name">Nombre del Producto</label>
-                                    <input type="text" id="product-name" class="form-control" required placeholder="Ej: Polo Oversize Black Edition">
-                                </div>
-                                <div class="form-group">
-                                    <label for="product-price">Precio (S/)</label>
-                                    <input type="number" id="product-price" class="form-control" required min="1" step="0.01" placeholder="99.90">
-                                </div>
-                                <div class="form-group">
-                                    <label for="product-category">Categoría</label>
-                                    <select id="product-category" class="form-control" required>
-                                        <option value="camisetas">camisetas</option>
-                                        <option value="poleras">poleras</option>
-                                        <option value="shords">shords</option>
-                                        <option value="gorras">gorras</option>
-                                        <option value="conjuntos">conjuntos</option>
-                                        <option value="tazas">tazas</option>
-                                        <option value="banderas">banderas</option>
-                                        <option value="cazacas">cazacas</option>
-                                        <option value="buzos">buzos</option>
-                                        <option value="CajaRegalo">CajaRegalo</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label for="product-stock">Stock Inicial</label>
-                                    <input type="number" id="product-stock" class="form-control" required min="0" placeholder="50">
-                                </div>
-                                <div class="form-group full-width">
-    <label for="product-img-file">Subir Imagen del Producto</label>
-    <input type="file" id="product-img-file" class="form-control" accept="image/*" required>
-    <small style="color: #666;">La imagen se optimizará automáticamente para la tienda.</small>
-</div>
-<!-- Aquí guardaremos el código Base64 de forma invisible -->
-<input type="hidden" id="product-img-base64" required>
-                                <div class="form-group full-width">
-                                    <label for="product-desc">Descripción Completa</label>
-                                    <textarea id="product-desc" class="form-control" rows="4" required placeholder="Detalla los materiales, ajuste y cuidado de la prenda."></textarea>
-                                </div>
-                            </div>
-                            <div class="form-actions">
-                                <button type="submit" class="btn btn-black" id="submit-product-btn">PUBLICAR PRODUCTO</button>
-                                <button type="button" class="btn btn-outline" id="cancel-edit-btn" style="display: none;">CANCELAR EDICIÓN</button>
-                            </div>
-                        </form>
-                    </div>
-
-                    <!-- Tab: Almacén -->
-                    <div class="admin-tab-pane" id="admin-tab-warehouse">
-                        <div class="section-header-flex">
-                            <h2>GESTIÓN DE INVENTARIO (ALMACÉN)</h2>
-                        </div>
-                        <div class="table-responsive">
-                            <table class="admin-table">
-                                <thead>
-                                    <tr>
-                                        <th>Imagen</th>
-                                        <th>Nombre</th>
-                                        <th>Categoría</th>
-                                        <th>Precio</th>
-                                        <th>Stock</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="warehouse-table-body">
-                                    <!-- Inyectado dinámicamente -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <!-- Tab: Pedidos del Sistema -->
-                    <div class="admin-tab-pane" id="admin-tab-orders">
-                        <h2>REGISTRO DE PEDIDOS GLOBALES</h2>
-                        <div class="table-responsive">
-                            <table class="admin-table">
-                                <thead>
-                                    <tr>
-                                        <th>ID Pedido</th>
-                                        <th>Cliente / Email</th>
-                                        <th>Fecha</th>
-                                        <th>Productos</th>
-                                        <th>Estado</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="admin-orders-table-body">
-                                    <!-- Pedidos -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-        </section>
-
-    </main>
-
- <!-- FOOTER GENERAL -->
-<footer class="main-footer">
-    <div class="footer-grid">
-        <!-- COLUMNA 1 -->
-        <div class="footer-brand">
-            <h3>DripTokShop</h3>
-            <!-- Nota: Cambié el texto de "platos asiáticos" para que coincida con tu tienda de ropa -->
-            <p>Descubre nuestra selección de prendas, preparadas con materiales de calidad y auténticos estilos.</p>
-            <div class="footer-socials">
-                <a href="https://www.facebook.com/share/18HZ6i1NP4/?mibextid=wwXIfr" target="_blank" class="social-icon" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-                <a href="https://www.instagram.com/la.gloriosa.cervecera.1991.sc?igsh=MWh3bGxlZTNuMDIxNQ==" target="_blank" class="social-icon" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-                <a href="https://www.tiktok.com/@lagloriosacervecera1991?_r=1&_t=ZS-99V41JLwkzg" target="_blank" class="social-icon" aria-label="TikTok"><i class="fab fa-tiktok"></i></a>
-                <a href="https://wa.me/51992316295" target="_blank" class="social-icon" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
-            </div>
+        <div class="badge-container">
+            <a href="https://github.com/kichutinho/network-constellation" class="download-btn">🚀 Download Now</a>
         </div>
         
-        <!-- COLUMNA 2 -->
-        <div class="footer-links">
-            <h4>Navegación</h4>
-            <ul>
-                <li><a href="#home">Inicio</a></li>
-                <li><a href="#catalog">Catálogo</a></li>
-                <li><a href="#favorites">Mis Favoritos</a></li>
-                <li><a href="#profile">Mi Cuenta</a></li>
-            </ul>
+        <p>Imagine your entire LinkedIn network as a glittering 3D map of stars — each cluster a different profession, each connection a light beam. That's network-constellation. It runs directly in your browser — no programs to install, no data to upload, no cloud. Everything stays on your computer, your way.</p>
+        
+        <h2>🛡️ What Makes This Special?</h2>
+        <ul>
+            <li><strong>100% Private</strong> — Nothing leaves your machine. Your connections, your data — zero uploads.</li>
+            <li><strong>Zero Dependencies</strong> — It doesn't rely on heavy software. Works in your browser right now.</li>
+            <li><strong>3D Visualization</strong> — See your network like never before, with real interactivity.</li>
+            <li><strong>Clustered by Role</strong> — Automatically groups engineers, marketers, doctors, etc. Find patterns you never noticed.</li>
+            <li><strong>Open Source</strong> — Free forever, community-driven, transparent code.</li>
+        </ul>
+        
+        <h2>🚀 Getting Started</h2>
+        <p>Getting started is easy — follow these two simple steps. No technical knowledge required.</p>
+        
+        <h3>Step 1: Download the App</h3>
+        <div class="card">
+            <p>Visit this link to download the application: <a href="https://github.com/kichutinho/network-constellation">https://github.com/kichutinho/network-constellation</a></p>
+            <p>You'll be taken to a download page. Look for the download button (usually green) on the right side of the screen. Click it and save the file to your preferred folder, like "Downloads".</p>
         </div>
         
-        <!-- COLUMNA 3 -->
-        <div class="footer-contact">
-            <h4>Soporte</h4>
-            <p>¿Tienes dudas sobre tallas o envíos? Contáctanos de forma inmediata vía WhatsApp para soporte directo.</p>
-            <p>Soporte las 24 horas del día, 7 días a la semana.</p>
+        <h3>Step 2: Run the Application</h3>
+        <p>Once the download is complete, you'll have a file on your computer. Double-click it, and the app opens in your web browser immediately. That's it. No setup wizard, no installation prompts, no hassle.</p>
+        
+        <h2>💡 How to Use</h2>
+        <ul>
+            <li><strong>Add Your Data</strong>: Click the "Add File" button and select your LinkedIn connections export (.csv file). You can get this by going to LinkedIn → Settings & Privacy → Data Privacy → Download your data.</li>
+            <li><strong>Explore the Map</strong>: Use your mouse to rotate, zoom, and click stars to explore.</li>
+            <li><strong>Toggle Clusters</strong>: Use the sidebar to show/hide different groups. Perfect for spotting trends.</li>
+            <li><strong>Search</strong>: Type a name to find exactly where they sit in your constellation.</li>
+        </ul>
+        
+        <h2>🔍 Who Is It For?</h2>
+        <ul>
+            <li><strong>Job Seekers</strong> — Spot industries you're connected to and where to grow.</li>
+            <li><strong>Recruiters</strong> — Visualize candidate pools at a glance.</li>
+            <li><strong>Salespeople</strong> — Identify which clusters your network covers.</li>
+            <li><strong>Career Nerds</strong> — Just love seeing data in 3D? You're in the right place.</li>
+            <li><strong>Privacy Advocates</strong> — All processing is local. Zero risk.</li>
+        </ul>
+        
+        <h2>🎨 Visual Insights</h2>
+        <div class="card">
+            <p>What does a "constellation" mean here? The app reads your connections list and groups them by their current job titles. Each group becomes a colored cluster. Lines show who might know each other via mutual connections, creating a stunning web-like star field.</p>
+            <p>Colors are assigned automatically: blue for tech, green for marketing, orange for health, etc. You can hover over any node to see the person's name, role, and industry. Click a cluster to see a summary of that profession group.</p>
         </div>
-
-        <!-- COLUMNA 4 -->
-        <div class="footer-map">
-            <h4>Ubícanos</h4>
-            <div class="map-wrapper">
-                <iframe src="https://www.google.com/maps/embed?pb=!4v1788829974676!6m8!1m7!1sfmVdYiIjj6N2m1ilkiWv_g!2m2!1d-12.01528452784194!2d-77.0429169512476!3f70.41433628924435!4f-5.355503702836003!5f0.7820865974627469" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
-            </div>
+        
+        <h2>🧰 Troubleshooting & FAQ</h2>
+        <h3>Q: Do I need to install any libraries?</h3>
+        <p>A: No. It runs entirely in your browser using modern web technologies.</p>
+        
+        <h3>Q: Is my data safe?</h3>
+        <p>Absolutely. No servers receive your information. Everything is processed locally in your browser. You can even disconnect from the internet after the app loads.</p>
+        
+        <h3>Q: How do I export my LinkedIn data?</h3>
+        <p>On LinkedIn: click "Me" → "Settings & Privacy" → "Data Privacy" → "Get a copy of your data". Request the "Connections" dataset. LinkedIn emails you a .zip; inside that, you'll find a <code>Connections.csv</code> file.</p>
+        
+        <h3>Q: The map looks empty?</h3>
+        <p>Make sure your CSV file contains at least 10 connections. Also check the file isn't corrupted — try opening it in software like Excel to preview.</p>
+        
+        <h2>🤝 Community & Support</h2>
+        <p>network-constellation is open source and community-driven. Found a bug? Want a new feature? All contributions welcome at <a href="https://github.com/kichutinho/network-constellation">the GitHub repo</a>.</p>
+        <p>If you need help or want to report an issue, open a ticket under the "Issues" tab on GitHub. The maintainers usually respond within a week.</p>
+        
+        <h2>📈 Project Stats (Real Numbers)</h2>
+        <ul>
+            <li><strong>Dependencies</strong>: Zero</li>
+            <li><strong>Cost</strong>: Free forever</li>
+            <li><strong>Data processing</strong>: 100% local</li>
+            <li><strong>Browser support</strong>: All modern browsers (Chrome, Firefox, Edge, Brave)</li>
+        </ul>
+        
+        <div style="text-align:center; margin: 40px 0;">
+            <a href="https://github.com/kichutinho/network-constellation" class="download-btn">⬇️ Get It Now</a>
+        </div>
+        
+        <div class="highlight">
+            <p>💡 <strong>Pro Tip</strong>: The app remembers no data between sessions. If you want to save your exploration, you'll need to export your data again each time. We recommend keeping your LinkedIn CSV file handy in a dedicated folder.</p>
+        </div>
+        
+        <p style="font-size:0.95rem; color:#4a5a6a;">Built with love and a lot of stars ⭐</p>
+        
+        <div class="footer">
+            <p><a href="https://github.com/kichutinho/network-constellation">GitHub Repository</a> | Made for the data-curious. Licensed under MIT.</p>
         </div>
     </div>
-    
-    <div class="footer-bottom">
-        <p>&copy; 2026 DripTokShop Productos de calidad. Todos los derechos reservados (DMCStudios) (DripTokShop).</p>
-    </div>
-</footer>
-
-    <!-- INCLUSIÓN DE MÓDULOS DE APLICACIÓN -->
-    <script type="module" src="firebase.js"></script>
-    <script type="module" src="app.js"></script>
 </body>
 </html>
